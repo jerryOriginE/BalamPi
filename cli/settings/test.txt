@@ -1,0 +1,3 @@
+test1=oie
+test2="como estas"
+test3=bien y tu?
