@@ -8,6 +8,11 @@ import os
 
 from registry import register
 from prompt_toolkit.shortcuts import radiolist_dialog
+from prompt_toolkit import prompt
+
+# Resolve settings directory relative to this file (cli/commands/settings.py -> cli/settings)
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+SETTINGS_DIR = os.path.join(BASE_DIR, 'settings')
 
 
 @register('settings')
@@ -27,64 +32,101 @@ def settings(args):
 
 def export_settings():
     print("Exporting settings...")
-    for file in os.listdir('settings'):
+    if not os.path.isdir(SETTINGS_DIR):
+        print("Settings directory not found.")
+        return
+
+    for file in os.listdir(SETTINGS_DIR):
         if file.endswith('.txt'):
+            path = os.path.join(SETTINGS_DIR, file)
             print(f"\n{file}:")
-            with open(f'settings/{file}') as f:
-                print(f.read())
+            try:
+                with open(path, encoding='utf-8') as f:
+                    print(f.read())
+            except Exception as e:
+                print(f"Failed to read {file}: {e}")
 
 def import_settings():
     print("Importing settings...")
-    txt_files = [file for file in os.listdir('settings') if file.endswith('.txt')]
+    if not os.path.isdir(SETTINGS_DIR):
+        print("Settings directory not found.")
+        return
+
+    txt_files = [file for file in os.listdir(SETTINGS_DIR) if file.endswith('.txt')]
     if not txt_files:
         print("No settings files found.")
         return
     
     print("Available settings files:")
 
+    # Use filename as the dialog value so the return is the filename directly
     selection = radiolist_dialog(
         title="Select Settings File",
         text="Choose a settings file to edit:",
-        values=[(str(i), file) for i, file in enumerate(txt_files, start=1)]
+        values=[(file, file) for file in txt_files]
     ).run()
 
-    #for some reason it returns the int rather than the file name so we need to convert it back to the file name
     if selection is None:
         print("No file selected.")
         return
-    print(f"Selected file: {txt_files[int(selection)-1]}")
+    selected_file = selection
+    print(f"Selected file: {selected_file}")
 
     # let the user decide which value to change also using radiolist_dialog
     # we can read the file and split it by lines then split each line by = to get the key and value then we can use the keys as options for the radiolist_dialog
-    options = []
-    with open(f'settings/{txt_files[int(selection)-1]}') as f:
-        options = f.read().splitlines()
+    path = os.path.join(SETTINGS_DIR, selected_file)
+    try:
+        with open(path, encoding='utf-8') as f:
+            lines = f.read().splitlines()
+    except Exception as e:
+        print(f"Failed to read {selected_file}: {e}")
+        return
 
-    print(f"Current settings in {txt_files[int(selection)-1]}:")
+    # parse lines into key/value where possible and present user-friendly options
+    kv = []
+    for line in lines:
+        if '=' in line:
+            k, v = line.split('=', 1)
+            kv.append((k.strip(), v.strip()))
+        else:
+            kv.append((line.strip(), ''))
+
+    if not kv:
+        print(f"No settings in {selected_file}.")
+        return
 
     setting_selection = radiolist_dialog(
         title="Select Setting to Edit",
         text="Choose a setting to edit:",
-        values=[(str(i), option) for i, option in enumerate(options, start=1)]
+        values=[(key, f"{key} = {value}") for key, value in kv]
     ).run()
 
-    print(f"Selected setting: {options[int(setting_selection)-1]}")
-    new_data = input(f"Enter new data for {txt_files[int(selection)-1]} (leave blank to keep current data): ")
+    if setting_selection is None:
+        print("No setting selected.")
+        return
+
+    selected_key = setting_selection
+    # prompt for new value using prompt_toolkit to avoid mixing input() with radiolist_dialog
+    new_data = prompt(f"Enter new value for '{selected_key}' (leave blank to keep current value): ")
     
     if new_data:
-        # we need to just replace the new data the selecteed one not the entire file so we can read the file and split it by lines then replace the selected line with the new data then write the file back
-        # but we need to keep the format so 
-        # settingName=settingValue
-        with open(f'settings/{txt_files[int(selection)-1]}') as f:
-            lines = f.read().splitlines()
+        # replace the corresponding key in the original lines preserving order
+        updated = False
+        for i, line in enumerate(lines):
+            if line.split('=', 1)[0].strip() == selected_key:
+                lines[i] = f"{selected_key}={new_data}"
+                updated = True
+                break
 
-        idx = int(setting_selection) - 1
-        key = lines[idx].split("=", 1)[0]
-        lines[idx] = f"{key}={new_data}"
+        if not updated:
+            # append as new line
+            lines.append(f"{selected_key}={new_data}")
 
-        with open(f'settings/{txt_files[int(selection)-1]}', 'w') as f:
-            f.write('\n'.join(lines))
-
-        print(f"{txt_files[int(selection)-1]} has been updated, new data: {new_data}")
+        try:
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(lines))
+            print(f"{selected_file} has been updated, new value for {selected_key}: {new_data}")
+        except Exception as e:
+            print(f"Failed to write {selected_file}: {e}")
     else:
-        print(f"{txt_files[int(selection)-1]} remains unchanged.")
+        print(f"{selected_file} remains unchanged.")

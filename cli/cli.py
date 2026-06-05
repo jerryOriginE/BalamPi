@@ -5,21 +5,41 @@ from prompt_toolkit.completion import WordCompleter
 
 import os
 import importlib
+import pkgutil
+from registry import commands
+
 
 def load_commands():
-    for file in os.listdir('commands'):
-        if file.endswith('.py') and file != '__init__.py':
-            importlib.import_module(f'commands.{file[:-3]}')
+    """Dynamically import all modules from the `commands` directory by filepath.
 
-load_commands()
+    This avoids requiring `cli` to be an importable package and works when
+    running `python app.py` from the `cli/` folder.
+    """
+    commands_dir = os.path.join(os.path.dirname(__file__), 'commands')
+    if not os.path.isdir(commands_dir):
+        return
 
-from registry import commands
-#print(commands)
+    for filename in os.listdir(commands_dir):
+        if not filename.endswith('.py') or filename == '__init__.py':
+            continue
+        name = filename[:-3]
+        path = os.path.join(commands_dir, filename)
+        try:
+            spec = importlib.util.spec_from_file_location(f'cli.commands.{name}', path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+        except Exception as e:
+            print(f"Failed to load command module {name} from {path}: {e}")
 
-SESSION = PromptSession()
-COMPLETER = WordCompleter(commands.keys(), ignore_case=True)
 
 def app():
+    # load commands when we start the app (avoid running on import)
+    load_commands()
+
+    SESSION = PromptSession()
+    # Build completer from the registry at runtime (after loading commands)
+    COMPLETER = WordCompleter(list(commands.keys()), ignore_case=True)
+
     print("Welcome to the BalamPi CLI! Type 'help' to see available commands. Type 'exit' to quit.")
     while True:
         try:
@@ -40,7 +60,10 @@ def app():
             args = parts[1:]
 
             if cmd in commands:
-                commands[cmd](args)
+                try:
+                    commands[cmd](args)
+                except Exception as e:
+                    print(f"Error running command '{cmd}': {e}")
             else:
                 print(f"Unknown command: {cmd}")
 
@@ -49,4 +72,6 @@ def app():
         except EOFError:
             break
 
-app()
+
+if __name__ == '__main__':
+    app()

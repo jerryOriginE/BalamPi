@@ -1,5 +1,6 @@
-from cli import app
 import sys
+import os
+import importlib.util
 
 VERSION = "0.1.0"
 
@@ -19,8 +20,25 @@ if "--help" in sys.argv or "-h" in sys.argv:
     print("  --help, -h      Show this help message")
     sys.exit(0)
 
+
 def main():
-    app()
+    # Load the local cli.py module (same directory) and call app()
+    base_dir = os.path.dirname(__file__)
+    cli_path = os.path.join(base_dir, 'cli.py')
+    if not os.path.exists(cli_path):
+        print(f"cli.py not found in {base_dir}")
+        sys.exit(1)
+
+    spec = importlib.util.spec_from_file_location('local_cli', cli_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    if not hasattr(module, 'app'):
+        print("cli.py does not expose an `app()` function")
+        sys.exit(1)
+
+    module.app()
 
 
-if __name__ == "__main__":    main()
+if __name__ == "__main__":
+    main()

@@ -7,6 +7,10 @@
 
 from registry import register
 from mechanisms.TrashController import TrashController
+import os
+
+# Resolve settings path relative to package
+SETTINGS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'settings', 'GPIOPins.txt'))
 
 # we need a way of sotring wether the trashcontroller exist or not to be able to maipulate but the way the code currently work is not just OOP the controler is but no this command so
 # we can use a global variable to store the controller instance and check if it exists before trying to move it
@@ -47,14 +51,31 @@ def start_sim():
     # we can use a dict to store the pin numbers
     # example: pins = {'arm1': 14, 'arm2': 15, 'pivot': 16}
     pins = {}
-    with open('settings/GPIOPins.txt') as f:
-        for line in f:
-            key, value = line.strip().split('=')
-            pins[key] = int(value)
+    try:
+        with open(SETTINGS_PATH, encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if not line or '=' not in line:
+                    continue
+                key, value = line.split('=', 1)
+                try:
+                    pins[key.strip()] = int(value.strip())
+                except ValueError:
+                    print(f"Warning: invalid pin value for {key}: {value}")
+    except FileNotFoundError:
+        print(f"GPIO pins settings file not found: {SETTINGS_PATH}")
+        return
+
     print(f"Extracted pins: {pins}")
-    
-    global trash_controller 
-    trash_controller = TrashController(pins['arm1'], pins['arm2'], pins['pivot'], debug=True)  # Set debug to True to avoid actual servo movement during testing
+
+    global trash_controller
+    try:
+        trash_controller = TrashController(pins.get('arm1'), pins.get('arm2'), pins.get('pivot'), debug=True)
+    except Exception as e:
+        print(f"Failed to initialize TrashController: {e}")
+        trash_controller = None
+        return
+
     trash_controller.calibrate()
 
 def move_to_position(position):
