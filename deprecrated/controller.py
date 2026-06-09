@@ -12,17 +12,9 @@ class ArmController:
             min_pulse_width=0.0005,
             max_pulse_width=0.0025
         )
-        self.servo2 = AngularServo(
-            servo2,
-            min_angle=0,
-            max_angle=180,
-            min_pulse_width=0.0005,
-            max_pulse_width=0.0025
-        )
 
     def set_angle(self, angle):
         self.servo1.angle = angle
-        self.servo2.angle = 180 - angle
 
 class PivotController:
     def __init__(self, servo):
@@ -37,57 +29,48 @@ class PivotController:
     def set_angle(self, angle):
         self.servo.angle = angle
 
+CALIBRATE_ARM_ANGLE = 90
+CALIBRATE_PIVOT_ANGLE = 0
 
-arm_pos=45
-pivot_pos=0
-arm_rev_pos=100
-pivot_rev_pos=160
+POSITIONS = {
+    "back_right": (100, 90),
+    "front_left": (80, 0),
+    "back_left": (100, 90),
+    "front_right": (80, 90)
+}
 
 class Controller:
     def __init__(self, arm_servo1, arm_servo2, pivot_servo):
         self.arm = ArmController(arm_servo1, arm_servo2)
         self.pivot = PivotController(pivot_servo)
 
+    def dettach_servos(self):
+        sleep(0.5)
+        self.arm.dettach()
+        self.pivot.dettach()
+
     def calibrate(self):
         print("Calibrating servos to start position...")
-        self.arm.set_angle(90)
-        self.pivot.set_angle(50)
+        self.arm.set_angle(CALIBRATE_ARM_ANGLE)
+        self.pivot.set_angle(CALIBRATE_PIVOT_ANGLE)
+    
+        self.dettach_servos()
 
-    def move_back_right(self):
-        print("Moving to back right...")
-        self.arm.set_angle(arm_pos)
-        self.pivot.set_angle(pivot_pos)
+    def move_to(self, position):
+        self.calibrate()
 
-    def move_front_left(self):
-        print("Moving to front left...")
-        self.arm.set_angle(arm_rev_pos)
-        self.pivot.set_angle(pivot_pos)
+        print(f"Moving to {position}...")
+        self.pivot.set_angle(POSITIONS[position][1])
+        sleep(1)
+        self.arm.set_angle(POSITIONS[position][0])
 
-    def move_back_left(self):
-        print("Moving to back left...")
-        self.arm.set_angle(arm_pos)
-        self.pivot.set_angle(pivot_rev_pos)
-
-    def move_front_right(self):
-        print("Moving to front right...")
-        self.arm.set_angle(arm_rev_pos)
-        self.pivot.set_angle(pivot_rev_pos)
+        self.dettach_servos()
 
 def main():
     controller = Controller(18, 19, 20)
     controller.calibrate()
     sleep(2)
 
-    while True:
-        controller.move_back_right()
-        sleep(1)
-        controller.move_front_left()
-        sleep(1)
-        controller.move_back_left()
-        sleep(1)
-        controller.move_front_right()
-        sleep(1)
-        controller.calibrate()
-        sleep(1)
+    controller.move_to("back_right")
 
 if __name__ == "__main__":    main()

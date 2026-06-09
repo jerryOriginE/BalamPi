@@ -1,0 +1,95 @@
+from controllers.TrashController import Controller
+from controllers.DoorsController import DoorsController
+from time import sleep
+from enum import Enum
+
+class Status(Enum):
+    IDLE,
+    PENDING,
+    IN_PROGRESS,
+    COMPLETED
+
+class Position(Enum):
+    BACK_LEFT = 'back_left'
+    BACK_RIGHT = 'back_right'
+    FRONT_LEFT = 'front_left'
+    FRONT_RIGHT = 'front_right'
+
+# here wer acess a unique string to a Postion enum this can be changed with a def later
+TRASH_DATA = {
+    "paper": Position.BACK_RIGHT,
+    "plastic": Position.FRONT_LEFT,
+    "glass": Position.BACK_LEFT,
+    "metal": Position.FRONT_RIGHT
+}
+
+# so the key idea behind te controller is multiple components working in sync, the RecycleCOntroller would receive something like recycle_controller.process_trash('TRASH_NAME')
+# the controllwer will receive this it wil decide in which position to deposite and the na sequence of events happends
+# the doors .open() the the trash_controllers move.to(position) and the doors close() after this the systems can be trigged agian but durin the whole proces the different Status enums will change letting know the user the current state so it cant get overrun
+# the controller will also have a calibrate() function that will calibrate all the components to their start position, this can be called at the start of the program or after a certain number of cycles to ensure everything is in the right position
+
+class RecycleController:
+    def __init__(self):
+        self.trash_controller = Controller(16, 26)
+        self.doors_controller = DoorsController(16, 26, 20, 21)
+        self.status = Status.IDLE
+        self.trash_data = TRASH_DATA
+
+    def change_trash_data(self, trash_type, position):
+        # check if the format is correct as a string and position enum
+        if not isinstance(trash_type, str) or not isinstance(position, Position):
+            print("Invalid input format. Trash type should be a string and position should be a Position enum.")
+            return
+        
+        self.trash_data[trash_type] = position
+        print(f"Updated trash data: {trash_type} -> {position.value}")
+
+    def calibrate(self):
+        self.trash_controller.calibrate()
+        self.doors_controller.calibrate()
+
+    def process_trash(self, trash_type):
+        if self.status != Status.IDLE:
+            print("System is busy processing another trash, please wait...")
+            return
+
+        self.status = Status.PENDING
+        print(f"Processing {trash_type}...")
+
+        position = self.trash_data.get(trash_type)
+        if not position:
+            print(f"Unknown trash type: {trash_type}")
+            self.status = Status.IDLE
+            return
+        self.status = Status.IN_PROGRESS
+        
+        print(f"Current status: {self.status.name}, Processing: {trash_type}, Next position: {position.value}, Next action: Open doors")
+
+        self.trash_controller.calibrate()  # ensure trash controller is in start position before moving
+        self.doors_controller.open()
+
+        sleep(1)  # wait for doors to open
+
+        self.trash_controller.move_to(position.value)
+
+        sleep(1)  # wait for trash to be moved
+
+        self.doors_controller.close()
+
+        sleep(1)  # wait for doors to close
+
+        self.status = Status.COMPLETED
+        print(f"Finished processing {trash_type}. Current status: {self.status.name}")
+
+        print("System is now idle and ready for next trash.")
+        self.status = Status.IDLE
+
+def main():
+    recycle_controller = RecycleController()
+    recycle_controller.calibrate()
+
+    # test
+    recycle_controller.process_trash('paper')
+
+
+if __name__ == "__main__":    main()
