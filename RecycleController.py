@@ -31,7 +31,7 @@ TRASH_DATA = {
 class RecycleController:
     def __init__(self):
         self.trash_controller = Controller(16, 26)
-        self.doors_controller = DoorsController(16, 26, 20, 21)
+        self.doors_controller = DoorsController(16, 26, 5, 6)
         self.status = Status.IDLE
         self.trash_data = TRASH_DATA
 
