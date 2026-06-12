@@ -1,1 +1,4 @@
 .venv
+detectai/.venv
+__pycache__/
+detectai/tflite_env

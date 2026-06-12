@@ -6,7 +6,7 @@ def main():
     
     controller.calibrate()
     sleep(1)
-    while False:
+    while True:
         #
         sleep(1)
         controller.open_doors()

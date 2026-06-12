@@ -8,8 +8,8 @@ class Servo:
             initial_angle=0,
             min_angle=min_angle,
             max_angle=max_angle,
-            min_pulse_width=min_pulse_width,
-            max_pulse_width=max_pulse_width
+            min_pulse_width=0.000,
+            max_pulse_width=0.0026
         )
 
     def set_angle(self, angle):
@@ -21,7 +21,7 @@ class Servo:
 ## what i am planning is that set all servos two 0 with code and whateve rposition is that hpyiscal attach the hinge there when it should be closed
 
 
-OPEN_ANGLE = -180 # -180
+OPEN_ANGLE = 180 # -180
 CLOSE_ANGLE = 0
 
 class Door():
@@ -36,8 +36,8 @@ class Door():
         self.servo2.detach()
 
     def calibrate(self):
-        self.servo1.set_angle(0)
-        self.servo2.set_angle(0)
+        self.servo1.set_angle(CLOSE_ANGLE)
+        self.servo2.set_angle(CLOSE_ANGLE)
 
     def open(self):
         if not self.inverted:
@@ -64,15 +64,15 @@ class DoorController():
     def calibrate(self):
         print("Calibrating doors...")
         self.door1.calibrate()
-        self.door2.calibrate()
+        #self.door2.calibrate()
 
 
     def open_doors(self):
         print("Opening doors...")
         self.door1.open()
-        self.door2.open()
+        #self.door2.open()
 
     def close_doors(self):
         print("Closing doors...")
         self.door1.close()
-        self.door2.close()
+        #self.door2.close()
