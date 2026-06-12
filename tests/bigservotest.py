@@ -15,10 +15,11 @@ from time import sleep
 #        sleep(2)
 
 class BigServo():
-    def __init__(self, pin, min_pulse_width=0.0005, max_pulse_width=0.0025):
+    def __init__(self, pin, min_pulse_width=0.0005, max_pulse_width=0.0025, inverted=False):
         self.pin = pin
         self.min_pulse_width = min_pulse_width
         self.max_pulse_width = max_pulse_width
+        self.inverted = inverted
 
         self.servo = Servo(
             self.pin,
@@ -30,16 +31,20 @@ class BigServo():
     def set_angle(self, position):
         if position < -1 or position > 1:
             raise ValueError("Position must be between -1 and 1")
-        self.servo.value = position
+        
+        if self.inverted:
+            position = -position
+        else:
+            self.servo.value = position
 
     def detach(self):
         self.servo.detach()
 
 
 class Controller():
-    def __init__(self, servo, servo2):
-        self.servo = servo
-        self.servo2 = servo2
+    def __init__(self, servo, servo2, servo1_inverted=False, servo2_inverted=False):
+        self.servo = Servo(servo, inverted=servo1_inverted)
+        self.servo2 = Servo(servo2, inverted=servo2_inverted)
 
     def stop_servos(self):
         self.servo.detach()
@@ -54,9 +59,7 @@ class Controller():
 
 
 def main():
-    servo1 = BigServo(5)
-    servo2 = BigServo(6)
-    controller = Controller(servo1, servo2)
+    controller = Controller(5, 6, False, False)
 
     #controller.move_servos(-1)
 
