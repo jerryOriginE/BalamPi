@@ -1,37 +1,44 @@
-from gpiozero import AngularServo
+from gpiozero import Servo
 from time import sleep
 
-class Servo:
-    def __init__(self, pin, min_angle=-180, max_angle=180, min_pulse_width=0.0009, max_pulse_width=0.0021):
-        self.servo = AngularServo(
-            pin,
-            initial_angle=0,
-            min_angle=min_angle,
-            max_angle=max_angle,
-            min_pulse_width=0.000,
-            max_pulse_width=0.0026
+class DoorServo():
+    def __init__(self, pin, min_pulse_width=0.0005, max_pulse_width=0.0025, inverted=False):
+        self.pin = pin
+        self.min_pulse_width = min_pulse_width
+        self.max_pulse_width = max_pulse_width
+        self.inverted = inverted
+
+        self.servo = Servo(
+            self.pin,
+            min_angle=-180,
+            max_angle=180,
+            min_pulse_width=self.min_pulse_width,
+            max_pulse_width=self.max_pulse_width
         )
+        print(f"Initialized servo on pin {self.pin} with pulse widths {self.min_pulse_width} to {self.max_pulse_width}")
 
     def set_angle(self, angle):
-        self.servo.angle = angle
+        if angle < -1 or angle > 1:
+            raise ValueError("Angle must be between -1 and 1")
+        
+        if self.inverted:
+            angle = -angle
+        
+        self.servo.value = angle
 
-# so we got a issue each door hanlde has two servos, one is opposite to the other bc the door moves with two hinges each hinge is attached to the servo so for one to open one servo need st ortate for say 45 deggres and the other needs to rotate 45 in the opposite direction
-# so whats the best way to achieved this
+    def detach(self):
+        self.servo.detach()
 
-## what i am planning is that set all servos two 0 with code and whateve rposition is that hpyiscal attach the hinge there when it should be closed
-
-
-OPEN_ANGLE = 180 # -180
-CLOSE_ANGLE = 0
+CLOSE_ANGLE = -1
+OPEN_ANGLE = 0
 
 class Door():
     def __init__(self, servo1, servo2, inverted=False):
-        self.servo1 = Servo(servo1)
-        self.servo2 = Servo(servo2)
+        self.servo1 = DoorServo(servo1, inverted=False)
+        self.servo2 = DoorServo(servo2, inverted=True)
         self.inverted = inverted
 
-    def detach(self):
-        sleep(0.5)
+    def stop_servos(self):
         self.servo1.detach()
         self.servo2.detach()
 
@@ -47,7 +54,8 @@ class Door():
             self.servo1.set_angle(-OPEN_ANGLE)
             self.servo2.set_angle(OPEN_ANGLE)
 
-        #self.detach()
+        sleep(1)
+        self.stop_servos()
 
     def close(self):
         self.servo1.set_angle(CLOSE_ANGLE)
