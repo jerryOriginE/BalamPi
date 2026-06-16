@@ -10,8 +10,6 @@ class DoorServo():
 
         self.servo = Servo(
             self.pin,
-            min_angle=-180,
-            max_angle=180,
             min_pulse_width=self.min_pulse_width,
             max_pulse_width=self.max_pulse_width
         )
@@ -42,9 +40,24 @@ class Door():
         self.servo1.detach()
         self.servo2.detach()
 
+    # Functin to move very sloslwy and in both direction to change if a door needs to be inverted
+    def test(self):
+        print("Testing door movement...")
+        for angle in range(-100, 101, 10):
+            print(f"Setting angle to {angle / 100}")
+            #self.servo1.set_angle(angle / 100)
+            #self.servo2.set_angle(-angle / 100)
+            sleep(0.1)
+        for angle in range(100, -101, -10):
+            print(f"Setting angle to {angle / 100}")
+            #self.servo1.set_angle(angle / 100)
+           # self.servo2.set_angle(-angle / 100)
+            sleep(0.1)
+
+
     def calibrate(self):
         self.servo1.set_angle(CLOSE_ANGLE)
-        self.servo2.set_angle(CLOSE_ANGLE)
+        #self.servo2.set_angle(CLOSE_ANGLE)
 
     def open(self):
         if not self.inverted:
@@ -54,14 +67,9 @@ class Door():
             self.servo1.set_angle(-OPEN_ANGLE)
             self.servo2.set_angle(OPEN_ANGLE)
 
-        sleep(1)
-        self.stop_servos()
-
     def close(self):
         self.servo1.set_angle(CLOSE_ANGLE)
         self.servo2.set_angle(CLOSE_ANGLE)
-
-        #self.detach()
 
 class DoorController():
     def __init__(self, servo1, servo2, servo3, servo4, door1_inverted, door2_inverted):
@@ -72,15 +80,29 @@ class DoorController():
     def calibrate(self):
         print("Calibrating doors...")
         self.door1.calibrate()
-        #self.door2.calibrate()
+        self.door2.calibrate()
 
+    def test_doors(self):
+        print("Testing doors...")
+        self.door1.test()
+        self.door2.test()
 
     def open_doors(self):
         print("Opening doors...")
         self.door1.open()
-        #self.door2.open()
+        self.door2.open()
+
+        sleep(1)
+
+        self.door1.stop_servos()
+        self.door2.stop_servos()
 
     def close_doors(self):
         print("Closing doors...")
         self.door1.close()
-        #self.door2.close()
+        self.door2.close()
+
+        sleep(1)
+
+        self.door1.stop_servos()
+        self.door2.stop_servos()

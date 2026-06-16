@@ -43,8 +43,8 @@ class BigServo():
 
 class Controller():
     def __init__(self, servo, servo2, servo1_inverted=False, servo2_inverted=False):
-        self.servo = Servo(servo, inverted=servo1_inverted)
-        self.servo2 = Servo(servo2, inverted=servo2_inverted)
+        self.servo = BigServo(servo, inverted=servo1_inverted)
+        self.servo2 = BigServo(servo2, inverted=servo2_inverted)
 
     def stop_servos(self):
         self.servo.detach()
