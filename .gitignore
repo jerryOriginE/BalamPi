@@ -2,3 +2,5 @@
 detectai/.venv
 __pycache__/
 detectai/tflite_env
+runs/
+waste_dataset/
