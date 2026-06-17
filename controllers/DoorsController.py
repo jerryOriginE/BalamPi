@@ -57,7 +57,7 @@ class Door():
 
     def calibrate(self):
         self.servo1.set_angle(CLOSE_ANGLE)
-        #self.servo2.set_angle(CLOSE_ANGLE)
+        self.servo2.set_angle(CLOSE_ANGLE)
 
     def open(self):
         if not self.inverted:
@@ -81,6 +81,11 @@ class DoorController():
         print("Calibrating doors...")
         self.door1.calibrate()
         self.door2.calibrate()
+
+        sleep(1)
+
+        self.door1.stop_servos()
+        self.door2.stop_servos()
 
     def test_doors(self):
         print("Testing doors...")

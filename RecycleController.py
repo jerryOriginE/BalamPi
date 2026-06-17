@@ -1,13 +1,13 @@
 from controllers.TrashController import Controller
-from controllers.DoorsController import DoorsController
+from controllers.DoorsController import DoorController
 from time import sleep
 from enum import Enum
 
 class Status(Enum):
-    IDLE,
-    PENDING,
-    IN_PROGRESS,
-    COMPLETED
+    IDLE = 'idle'
+    PENDING = 'pending'
+    IN_PROGRESS = 'in_progress'
+    COMPLETED = 'completed'
 
 class Position(Enum):
     BACK_LEFT = 'back_left'
@@ -30,8 +30,8 @@ TRASH_DATA = {
 
 class RecycleController:
     def __init__(self):
-        self.trash_controller = Controller(16, 26)
-        self.doors_controller = DoorsController(16, 26, 5, 6)
+        self.trash_controller = Controller(27, 22)
+        self.doors_controller = DoorController(26, 16, 5, 6, False, False)
         self.status = Status.IDLE
         self.trash_data = TRASH_DATA
 
@@ -46,7 +46,8 @@ class RecycleController:
 
     def calibrate(self):
         self.trash_controller.calibrate()
-        self.doors_controller.calibrate()
+        self.doors_controller.close_doors()
+        sleep(1)
 
     def process_trash(self, trash_type):
         if self.status != Status.IDLE:
@@ -66,16 +67,21 @@ class RecycleController:
         print(f"Current status: {self.status.name}, Processing: {trash_type}, Next position: {position.value}, Next action: Open doors")
 
         self.trash_controller.calibrate()  # ensure trash controller is in start position before moving
-        self.doors_controller.open()
 
+        sleep(1)  # wait for calibration to complete
+        self.doors_controller.open_doors()
+
+        print(f"Current status: {self.status.name}, Processing: {trash_type}, Next position: {position.value}, Next action: Move trash to position")
         sleep(1)  # wait for doors to open
 
         self.trash_controller.move_to(position.value)
 
+        print(f"Current status: {self.status.name}, Processing: {trash_type}, Next position: {position.value}, Next action: Close doors")
         sleep(1)  # wait for trash to be moved
 
-        self.doors_controller.close()
+        self.doors_controller.close_doors()
 
+        print(f"Current status: {self.status.name}, Processing: {trash_type}, Next position: {position.value}, Next action: Wait for doors to close")
         sleep(1)  # wait for doors to close
 
         self.status = Status.COMPLETED
@@ -88,8 +94,13 @@ def main():
     recycle_controller = RecycleController()
     recycle_controller.calibrate()
 
+    print("Calibrating please wait...")
+    sleep(3)
+
     # test
     recycle_controller.process_trash('paper')
 
 
 if __name__ == "__main__":    main()
+
+
