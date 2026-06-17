@@ -17,10 +17,10 @@ class Position(Enum):
 
 # here wer acess a unique string to a Postion enum this can be changed with a def later
 TRASH_DATA = {
-    "paper": Position.BACK_RIGHT,
-    "plastic": Position.FRONT_LEFT,
-    "glass": Position.BACK_LEFT,
-    "metal": Position.FRONT_RIGHT
+    "Plastic": Position.BACK_RIGHT,
+    "Tetrabrik": Position.FRONT_LEFT,
+    "Paper/Cardbord": Position.BACK_LEFT,
+    "Metal": Position.FRONT_RIGHT
 }
 
 # so the key idea behind te controller is multiple components working in sync, the RecycleCOntroller would receive something like recycle_controller.process_trash('TRASH_NAME')
@@ -101,6 +101,6 @@ def main():
     recycle_controller.process_trash('paper')
 
 
-if __name__ == "__main__":    main()
+#if __name__ == "__main__":    main()
 
 

@@ -1,4 +1,5 @@
-0 Plastic/Wrappers
-1 Paper/Cardboard
+0 Nothing
+1 Plastic
 2 Tetrabrik
-3 Metal(cans)
+3 Paper/Cardbord
+4 Metal
