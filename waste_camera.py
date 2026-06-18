@@ -2,7 +2,7 @@ from ultralytics import YOLO
 import cv2
 
 # Load your trained model
-model = YOLO("best.pt")
+model = YOLO("ars.pt")
 
 # Open Raspberry Pi camera
 cap = cv2.VideoCapture(0)
@@ -28,6 +28,8 @@ while True:
 
     label = result.names[class_id]
 
+    # showcase whatever it is seing
+
     # Display result
     text = f"{label}: {confidence*100:.1f}%"
 
@@ -40,6 +42,38 @@ while True:
         (0, 255, 0),
         2
     )
+
+    # showcase if its above 85% confidence showing what it think if its, if is not sure put that then
+    if confidence > 0.65:
+        cv2.putText(
+            frame,
+            f"Prediction: {label}",
+            (20, 80),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2
+        )
+    elif confidence >= 0.60:
+        cv2.putText(
+            frame,
+            f"Basura",
+            (20, 80),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2
+        )
+    else:
+        cv2.putText(
+            frame,
+            "Prediction: Not sure",
+            (20, 80),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 255),
+            2
+        )
 
     cv2.imshow("Waste Classifier", frame)
 

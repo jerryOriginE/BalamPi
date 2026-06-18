@@ -90,6 +90,19 @@ class RecycleController:
         print("System is now idle and ready for next trash.")
         self.status = Status.IDLE
 
+class ARS():
+    def __init__(self):
+        self.recycle_controller = RecycleController()
+
+    def calibrate_system(self):
+        self.recycle_controller.calibrate()
+
+    def process_trash(self, trash_type):
+        self.recycle_controller.process_trash(trash_type)
+
+    def change_trash_data(self, trash_type, position):
+        self.recycle_controller.change_trash_data(trash_type, position)
+
 def main():
     recycle_controller = RecycleController()
     recycle_controller.calibrate()
