@@ -4,3 +4,6 @@ __pycache__/
 detectai/tflite_env
 runs/
 waste_dataset/
+waste_dataset_old/
+barbiedata/
+trashnet/

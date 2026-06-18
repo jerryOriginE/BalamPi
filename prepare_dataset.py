@@ -5,6 +5,7 @@ from pathlib import Path
 
 # Source dataset
 SOURCE_DIR = Path("trashnet/dataset-resized")
+#SOURCE_DIR = Path("barbiedata")
 
 # Output dataset for YOLO Classification
 OUTPUT_DIR = Path("waste_dataset")
