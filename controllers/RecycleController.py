@@ -2,6 +2,17 @@ from controllers.TrashController import Controller
 from controllers.DoorsController import DoorController
 from time import sleep
 from enum import Enum
+import requests
+
+ESP32_IP = "192.168.1.123"
+
+# take into account this is a 16x2 lcd
+def lcd(text):
+    requests.request.get(
+        f"http://{ESP32_IP}/lcd",
+        params={"text": text},
+        timeout=2
+    )
 
 class Status(Enum):
     IDLE = 'idle'
@@ -65,6 +76,7 @@ class RecycleController:
         self.status = Status.IN_PROGRESS
         
         print(f"Current status: {self.status.name}, Processing: {trash_type}, Next position: {position.value}, Next action: Open doors")
+        lcd(f"Processing {trash_type}...")  # update LCD with current processing status
 
         self.trash_controller.calibrate()  # ensure trash controller is in start position before moving
 
@@ -72,22 +84,27 @@ class RecycleController:
         self.doors_controller.open_doors()
 
         print(f"Current status: {self.status.name}, Processing: {trash_type}, Next position: {position.value}, Next action: Move trash to position")
+        lcd(f"Status: {self.status.name}")
         sleep(1)  # wait for doors to open
 
         self.trash_controller.move_to(position.value)
 
         print(f"Current status: {self.status.name}, Processing: {trash_type}, Next position: {position.value}, Next action: Close doors")
+        lcd(f"Status: {self.status.name}")
         sleep(1)  # wait for trash to be moved
 
         self.doors_controller.close_doors()
 
         print(f"Current status: {self.status.name}, Processing: {trash_type}, Next position: {position.value}, Next action: Wait for doors to close")
+        lcd(f"Status: {self.status.name}")
         sleep(1)  # wait for doors to close
 
         self.status = Status.COMPLETED
         print(f"Finished processing {trash_type}. Current status: {self.status.name}")
+        lcd(f"Status: {self.status.name}")
 
         print("System is now idle and ready for next trash.")
+        lcd(f"Status: {self.status.name}")
         self.status = Status.IDLE
 
 class ARS():
