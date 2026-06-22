@@ -3,13 +3,20 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <HTTPClient.h>
+#include "esp_wpa2.h"
+#include "esp_wifi.h"
 
 const int buttonPin = 4;
 bool lastButtonState = HIGH;
 
 const char* piIP = "192.168.1.50"; // gotta change
 
-const char* ssid = "";
+// pinche internet del tec
+#define EAP_IDENTITY "a01801380"
+#define EAP_USERNAME "a01801380"
+#define EAP_PASSWORD ""
+
+const char* ssid = "Tec";
 const char* password = "";
 
 WebServer server(80);
@@ -109,15 +116,38 @@ void setup() {
   lcd.backlight();
   lcd.print("Connecting...");
 
+  /*
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
   }
+  */
+
+  // mierda para que el internet del tec funcione
+  WiFi.disconnect(true);
+  WiFi.mode(WIFI_STA);
+
+  esp_wifi_sta_wpa2_ent_set_identity(
+      (uint8_t*)EAP_IDENTITY,
+      strlen(EAP_IDENTITY));
+
+  esp_wifi_sta_wpa2_ent_set_username(
+      (uint8_t*)EAP_USERNAME,
+      strlen(EAP_USERNAME));
+
+  esp_wifi_sta_wpa2_ent_set_password(
+      (uint8_t*)EAP_PASSWORD,
+      strlen(EAP_PASSWORD));
+
+  esp_wpa2_config_t config = WPA2_CONFIG_INIT_DEFAULT();
+  esp_wifi_sta_wpa2_ent_enable(&config);
+
+  WiFi.begin(ssid);
 
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("Ready!");
+  lcd.print("ESP32_TEC");
 
   Serial.println(WiFi.localIP());
 
