@@ -1,13 +1,11 @@
-import requests
-from config import ESP32_IP
+import serial
+
+esp = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)
 
 def lcd(text):
     try:
-        requests.get(
-            f"http://{ESP32_IP}/lcd",
-            params={"text": text},
-            timeout=2
-        )
+        message = f"LCD:{text}\n"
+        esp.write(message.encode())
 
     except Exception as e:
         print(f"Failed to update LCD: {e}")
