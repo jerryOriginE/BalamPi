@@ -120,6 +120,7 @@ class ARS():
     def change_trash_data(self, trash_type, position):
         self.recycle_controller.change_trash_data(trash_type, position)
 
+'''
 def main():
     recycle_controller = RecycleController()
     recycle_controller.calibrate()
@@ -129,7 +130,7 @@ def main():
 
     # test
     recycle_controller.process_trash('paper')
-
+'''
 
 #if __name__ == "__main__":    main()
 

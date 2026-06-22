@@ -29,11 +29,10 @@ def button():
 
     subprocess.Popen([
         VENV_PYTHON,
-        SCRIPT_PATH
+        "/home/gerardo/BalamPi/qr_verify.py"
     ])
 
-
-    return "Started"
+    return "Verification Started"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
