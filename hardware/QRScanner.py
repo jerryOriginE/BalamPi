@@ -1,14 +1,16 @@
+# hardware/QRScanner.py
 import cv2
 import json
 from hardware.lcd import lcd
-from config import CAMERA_INDEX
+from config import QR_CAMERA_PATH
 
 class QRScanner:
-    def __init__(self):
+    def __init__(self, qr_camera_path=QR_CAMERA_PATH):
+        self.cam_path = qr_camera_path
         self.detector = cv2.QRCodeDetector()
 
     def scan(self):
-        cap = cv2.VideoCapture(CAMERA_INDEX)
+        cap = cv2.VideoCapture(self.cam_path, cv2.CAP_V4L2)  # Use V4L2 backend for Linux
         if not cap.isOpened():
             print("Cannot open camera")
             return None

@@ -1,5 +1,0 @@
-0 Nothing
-1 Plastic
-2 Tetrabrik
-3 Paper/Cardbord
-4 Metal

@@ -1,4 +1,0 @@
-arm_pos=45
-pivot_pos=0
-arm_rev_pos=100
-pivot_rev_pos=160

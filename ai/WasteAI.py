@@ -1,79 +1,93 @@
 from ultralytics import YOLO
 import cv2
-import time
-import threading
-from config import AI_MODEL, CAMERA_INDEX, AI_TIMEOUT, CONFIDENCE_THRESHOLD
+
 
 class WasteAI:
-    def __init__(self, ars, session):
-        self.ars = ars
-        self.session = session
 
-        self.model = YOLO(AI_MODEL)
+    def __init__(
+        self,
+        model_path,
+        camera_index=0,
+        confidence_threshold=0.90,
+        stable_frames=10
+    ):
 
-        self.active = False
-        self.busy = False
+        self.model = YOLO(model_path)
 
-        self.cap = None
+        self.cap = cv2.VideoCapture(camera_index)
 
-        self.last_lalbel = None
+        self.confidence_threshold = confidence_threshold
+        self.stable_frames = stable_frames
+
+        self.last_label = None
         self.counter = 0
 
-    def start(self):
-        if self.active:
-            return
-        
-        print("AI  Started")
-        self.active = True
-        self.cap = cv2.VideoCapture(CAMERA_INDEX)
+    def detect(self):
+        """
+        Returns:
+            Plastic
+            Metal
+            Paper/Cardbord
+            Tetrabrik
 
-    def stop(self):
-        print("AI Stopped")
-        self.active = False
-        if self.cap:
-            self.cap.release()
-            self.cap = None
+        or
 
-    def run_background(self):
-        thread = threading.Thread(
-            target=self.loop,
-            daemon=True
+            None
+        """
+
+        ret, frame = self.cap.read()
+
+        if not ret:
+            return None
+
+        result = self.model(
+            frame,
+            verbose=False
+        )[0]
+
+        if result.probs is None:
+            return None
+
+        label = result.names[
+            result.probs.top1
+        ]
+
+        confidence = float(
+            result.probs.top1conf
         )
 
-        thread.start()
+        if confidence < self.confidence_threshold:
+            self._reset()
+            return None
 
-    def loop(self):
-        while True:
-            if not self.active:
-                time.sleep(0.1)
-                continue
+        if label.lower() == "nothing":
+            self._reset()
+            return None
 
-            ret, frame = self.cap.read()
-            if not ret:
-                continue
+        if label == self.last_label:
+            self.counter += 1
+        else:
+            self.last_label = label
+            self.counter = 1
 
-            result = self.model(frame, verbose=False)[0]
+        if self.counter < self.stable_frames:
+            return None
 
-            label = result.names[result.probs.top1]
-            confidence = float(result.probs.top1conf)
+        detected_label = label
 
-            if confidence < CONFIDENCE_THRESHOLD or label == "nothing":
-                continue
-        
-            if self.busy:
-                continue
+        self._reset()
 
-            if label == self.last_lalbel:
-                self.counter += 1
-            else:
-                self.last_lalbel = label
-                self.counter = 0
+        print(
+            f"Detected {detected_label} "
+            f"({confidence:.2f})"
+        )
 
-            if self.counter >= 10:
-                self.busy = True
-                print(f"Detected: {label} with confidence {confidence:.2f}")
+        return detected_label
 
-            self.ars.process_trash(label)
+    def _reset(self):
+        self.last_label = None
+        self.counter = 0
 
-            self.busy = False
-            self.counter = 0
+    def release(self):
+        if self.cap:
+            self.cap.release()

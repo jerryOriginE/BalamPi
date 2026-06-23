@@ -1,8 +1,14 @@
-ESP32_IP = "192.168.1.123"
-SERVER_PORT = 6000
-AI_MODEL = "ai/ars.pt"
+BACKEND_URL = "http://100.89.179.5:5000/"  # arsb.balamserver.top
 CAMERA_INDEX = 0
-AI_TIMEOUT = 30
+QR_CAMERA_PATH = "/dev/v4l/by-id/usb-Suyin_HD_Camera_200910120001-video-index0"
+
+AI_MODEL_PATH = "ai/ars.pt"
 CONFIDENCE_THRESHOLD = 0.85
-BACKEND_URL = "http://localhost:5000"  # arsb.balamserver.top
-ENV="development"  # change to "production" in production environment
+STABLE_FRAMES = 10
+
+SESSION_TIMEOUT=30
+
+DETECTION_COOLDOWN = 5
+
+ESP32_PORT = "/dev/ttyUSB0"
+ESP32_BAUDRATE = 115200
