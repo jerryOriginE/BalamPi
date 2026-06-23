@@ -1,8 +1,8 @@
-from TrashController import Controller
+from controllers.TrashController import Controller
 from time import sleep
 
 def main():
-    controller = Controller(16, 26)
+    controller = Controller(27, 22)
 
     controller.move_to("back_right")
     controller.move_to("front_left")
