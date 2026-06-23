@@ -14,7 +14,7 @@ class WasteAI:
 
         self.model = YOLO(model_path)
 
-        self.cap = cv2.VideoCapture(camera_index)
+        self.cap = cv2.VideoCapture(0)
 
         self.confidence_threshold = confidence_threshold
         self.stable_frames = stable_frames
@@ -25,10 +25,10 @@ class WasteAI:
     def detect(self):
         """
         Returns:
-            Plastic
-            Metal
-            Paper/Cardbord
-            Tetrabrik
+            plastic
+            metal
+            trash
+            cardboard
 
         or
 
@@ -55,6 +55,8 @@ class WasteAI:
         confidence = float(
             result.probs.top1conf
         )
+
+        print(result.probs.top1, label, confidence)
 
         if confidence < self.confidence_threshold:
             self._reset()

@@ -20,8 +20,8 @@ from ars.ARS import ARS
 
 def build_system():
     esp = ESP32(port=ESP32_PORT, baudrate=ESP32_BAUDRATE)
-    lcd = LCD(esp32)
-    scanner = QRScanner(camera_path=QR_CAMERA_PATH)
+    lcd = LCD(esp)
+    scanner = QRScanner(qr_camera_path=QR_CAMERA_PATH, lcd=lcd)
 
     api = APIClient(BACKEND_URL)
 
@@ -31,12 +31,12 @@ def build_system():
 
     ai = WasteAI(
         model_path=AI_MODEL_PATH,
-        camera_index=CAMERA_INDEX,
+        camera_index=WASTE_CAMERA_PATH,
         confidence_threshold=CONFIDENCE_THRESHOLD,
         stable_frames=STABLE_FRAMES
     )
 
-    ars = ARS()
+    ars = ARS(lcd=lcd)
     ars.calibrate()
 
     cooldown = CooldownManager(DETECTION_COOLDOWN)

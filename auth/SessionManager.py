@@ -21,7 +21,7 @@ class SessionManager:
         self.last_active = 0
 
     def expired(self, timeout=30):
-        if not self.actove:
+        if not self.active:
             return False
         
         return (time.time() - self.last_active) > timeout

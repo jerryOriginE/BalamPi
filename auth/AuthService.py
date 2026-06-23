@@ -4,6 +4,7 @@ class AuthService:
         self.api = api
 
     def authenticate(self):
+        print("Starting authentication process...")
         qr_data = self.scanner.scan()
 
         if not qr_data:
@@ -14,4 +15,5 @@ class AuthService:
         if not result.get("valid"):
             return None
         
+        print(f"User authenticated: {result['user']}")
         return result["user"]

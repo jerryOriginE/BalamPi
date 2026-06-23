@@ -33,19 +33,23 @@ class RecyclingProcessor:
 
             self.ars.process(waste_type)
 
+            
             result = self.api.award_points(
                 self.session.user["id"],
                 waste_type
             )
 
+            # this return
             points = result.get(
-                "pointsAwarded",
+                "points",
                 "?"
             )
 
             self.lcd.show(
                 f"{waste_type} +{points}"
             )
+            
+            #self.lcd.show("Thank you!")
             
         finally:
             self.lock.release()

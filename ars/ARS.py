@@ -2,8 +2,8 @@
 from controllers.RecycleController import ARS as HardwareARS
 
 class ARS:
-    def __init__(self):
-        self.controller = HardwareARS()
+    def __init__(self, lcd):
+        self.controller = HardwareARS(lcd=lcd)
 
     def calibrate(self):
         self.controller.calibrate_system()

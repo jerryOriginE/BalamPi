@@ -37,6 +37,7 @@ class SystemController:
             daemon=True
         ).start()
 
+        
         threading.Thread(
             target=self.session_loop,
             daemon=True
@@ -70,18 +71,25 @@ class SystemController:
         self.state = State.ACTIVE
 
         self.lcd.show(
-            f"Welcome {user['name']}"
+            f"Welcome {user['username']}"
         )
 
     def ai_loop(self):
+        print("AI thread started")
+
         while True:
             if self.state != State.ACTIVE:
                 time.sleep(0.2)
                 continue
 
+            print("ACTIVE")
+
             label = self.ai.detect()
 
+            print("Detected:", label)
+
             if label:
+                print("Processing:", label)
                 self.processor.process(label)
 
     def session_loop(self):

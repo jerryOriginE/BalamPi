@@ -4,15 +4,8 @@ from time import sleep
 from enum import Enum
 import requests
 
-ESP32_IP = "192.168.1.123"
-
 # take into account this is a 16x2 lcd
-def lcd(text):
-    requests.request.get(
-        f"http://{ESP32_IP}/lcd",
-        params={"text": text},
-        timeout=2
-    )
+
 
 class Status(Enum):
     IDLE = 'idle'
@@ -28,10 +21,10 @@ class Position(Enum):
 
 # here wer acess a unique string to a Postion enum this can be changed with a def later
 TRASH_DATA = {
-    "Plastic": Position.BACK_RIGHT,
-    "Tetrabrik": Position.FRONT_LEFT,
-    "Paper/Cardbord": Position.BACK_LEFT,
-    "Metal": Position.FRONT_RIGHT
+    "plastic": Position.BACK_RIGHT,
+    "metal": Position.FRONT_LEFT,
+    "trash": Position.BACK_LEFT,
+    "cardboard": Position.FRONT_RIGHT
 }
 
 # so the key idea behind te controller is multiple components working in sync, the RecycleCOntroller would receive something like recycle_controller.process_trash('TRASH_NAME')
@@ -40,11 +33,12 @@ TRASH_DATA = {
 # the controller will also have a calibrate() function that will calibrate all the components to their start position, this can be called at the start of the program or after a certain number of cycles to ensure everything is in the right position
 
 class RecycleController:
-    def __init__(self):
+    def __init__(self, lcd):
         self.trash_controller = Controller(27, 22)
         self.doors_controller = DoorController(26, 16, 5, 6, False, False)
         self.status = Status.IDLE
         self.trash_data = TRASH_DATA
+        self.lcd = lcd
 
     def change_trash_data(self, trash_type, position):
         # check if the format is correct as a string and position enum
@@ -76,7 +70,7 @@ class RecycleController:
         self.status = Status.IN_PROGRESS
         
         print(f"Current status: {self.status.name}, Processing: {trash_type}, Next position: {position.value}, Next action: Open doors")
-        lcd(f"Processing {trash_type}...")  # update LCD with current processing status
+        self.lcd.show(f"Processing {trash_type}...")  # update LCD with current processing status
 
         self.trash_controller.calibrate()  # ensure trash controller is in start position before moving
 
@@ -84,32 +78,32 @@ class RecycleController:
         self.doors_controller.open_doors()
 
         print(f"Current status: {self.status.name}, Processing: {trash_type}, Next position: {position.value}, Next action: Move trash to position")
-        lcd(f"Status: {self.status.name}")
+        self.lcd.show(f"Status: {self.status.name}")
         sleep(1)  # wait for doors to open
 
         self.trash_controller.move_to(position.value)
 
         print(f"Current status: {self.status.name}, Processing: {trash_type}, Next position: {position.value}, Next action: Close doors")
-        lcd(f"Status: {self.status.name}")
+        self.lcd.show(f"Status: {self.status.name}")
         sleep(1)  # wait for trash to be moved
 
         self.doors_controller.close_doors()
 
         print(f"Current status: {self.status.name}, Processing: {trash_type}, Next position: {position.value}, Next action: Wait for doors to close")
-        lcd(f"Status: {self.status.name}")
+        self.lcd.show(f"Status: {self.status.name}")
         sleep(1)  # wait for doors to close
 
         self.status = Status.COMPLETED
         print(f"Finished processing {trash_type}. Current status: {self.status.name}")
-        lcd(f"Status: {self.status.name}")
+        self.lcd.show(f"Status: {self.status.name}")
 
         print("System is now idle and ready for next trash.")
-        lcd(f"Status: {self.status.name}")
+        self.lcd.show(f"Status: {self.status.name}")
         self.status = Status.IDLE
 
 class ARS():
-    def __init__(self):
-        self.recycle_controller = RecycleController()
+    def __init__(self, lcd):
+        self.recycle_controller = RecycleController(lcd)
 
     def calibrate_system(self):
         self.recycle_controller.calibrate()
