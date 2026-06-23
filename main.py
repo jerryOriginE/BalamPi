@@ -4,7 +4,7 @@ from auth.SessionManager import SessionManager
 from api.server import create_server
 from hardware.lcd import lcd
 from config import SERVER_PORT
-from time import sleep
+import time
 
 
 lcd("Booting... - ARS-os.v1.4.2")
@@ -27,7 +27,9 @@ app = create_server(ai, session)
 
 ai.run_background()
 
-app.run(host="0.0.0.0", port=SERVER_PORT)
 
-sleep(1)
+time.sleep(1)
 lcd("System Ready")
+
+
+app.run(host="0.0.0.0", port=SERVER_PORT)

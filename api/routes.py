@@ -25,6 +25,8 @@ def setup_routes(app, ai, session):
 
     # CORE BUTTON HANDLER
     def handle_button():
+        threading.Thread(target=_handle_button_safe, daemon=True).start()
+    def _handle_button_safe():
         print("Button Pressed")
 
         lcd_msg("Scanning QR...")
@@ -64,7 +66,8 @@ def setup_routes(app, ai, session):
             session.start(user)
 
             ai.stop()
-            time.sleep(0.5)
+            lcd("Restarting WasteAI...")
+            time.sleep(2)
             ai.start()
 
         else:
