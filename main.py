@@ -4,6 +4,10 @@ from auth.SessionManager import SessionManager
 from api.server import create_server
 from hardware.lcd import lcd
 from config import SERVER_PORT
+from time import sleep
+
+
+lcd("Booting... - ARS-os.v1.4.2")
 
 ars = ARS()
 
@@ -16,6 +20,7 @@ ars.calibrate_system()
 
 session = SessionManager()
 
+
 ai = WasteAI(ars, session)
 
 app = create_server(ai, session)
@@ -23,4 +28,6 @@ app = create_server(ai, session)
 ai.run_background()
 
 app.run(host="0.0.0.0", port=SERVER_PORT)
+
+sleep(1)
 lcd("System Ready")

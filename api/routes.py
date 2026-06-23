@@ -1,6 +1,7 @@
 import threading
 import serial
 import requests
+import time
 
 from hardware.lcd import lcd
 from hardware.QRScanner import QRScanner
@@ -56,11 +57,14 @@ def setup_routes(app, ai, session):
         if result.get("valid"):
             user = result["user"]
 
-            print(f"User {user['name']} verified successfully")
+            print(f"User {user['username']} verified successfully")
 
-            lcd_msg(f"Welcome {user['name']}")
+            lcd_msg(f"Welcome {user['username']}")
 
             session.start(user)
+
+            ai.stop()
+            time.sleep(0.5)
             ai.start()
 
         else:
