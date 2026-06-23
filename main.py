@@ -20,7 +20,7 @@ from ars.ARS import ARS
 
 def build_system():
     esp = ESP32(port=ESP32_PORT, baudrate=ESP32_BAUDRATE)
-    lcd = LCD()
+    lcd = LCD(esp32)
     scanner = QRScanner(camera_path=QR_CAMERA_PATH)
 
     api = APIClient(BACKEND_URL)
