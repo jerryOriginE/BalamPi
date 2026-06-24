@@ -33,7 +33,8 @@ def build_system():
         model_path=AI_MODEL_PATH,
         camera_index=WASTE_CAMERA_PATH,
         confidence_threshold=CONFIDENCE_THRESHOLD,
-        stable_frames=STABLE_FRAMES
+        stable_frames=STABLE_FRAMES,
+        lcd=lcd
     )
 
     ars = ARS(lcd=lcd)

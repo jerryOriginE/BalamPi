@@ -1,6 +1,7 @@
-# hardware/QRScanner.py
 import cv2
 import json
+import os
+import re
 from config import QR_CAMERA_PATH
 
 class QRScanner:
@@ -10,9 +11,21 @@ class QRScanner:
         self.lcd = lcd
 
     def scan(self):
-        cap = cv2.VideoCapture(self.cam_path, cv2.CAP_V4L2)  # Use V4L2 backend for Linux
+        # Resolve the symlink to a real path (e.g., /dev/videoX)
+        real_path = os.path.realpath(self.cam_path)
+        match = re.search(r'(\d+)$', real_path)
+        camera_index = None
+        if match:
+            camera_index = int(match.group(1))
+            print(f"Resolved camera index: {camera_index} from path: {real_path}")
+        else:
+            print(f"Could not resolve camera index from path: {real_path}")
+            return None
+
+        cap = cv2.VideoCapture(camera_index, cv2.CAP_V4L2) 
+        
         if not cap.isOpened():
-            print("Cannot open camera")
+            print(f"Cannot open camera at index {camera_index}")
             return None
         
         start = cv2.getTickCount()
@@ -26,14 +39,14 @@ class QRScanner:
             if data:
                 try:
                     payload = json.loads(data)
-                    self.lcd.show("QR Code Detected")
+                    if self.lcd: self.lcd.show("QR Code Detected") # Guard if lcd is None
 
                     cap.release()
                     return payload
                 
                 except Exception as e:
                     print(f"Error decoding QR data: {e}")
-                    self.lcd.show("Invalid QR Code")
+                    if self.lcd: self.lcd.show("Invalid QR Code")
                     continue
 
             cv2.imshow("QR Scanner", frame)
@@ -44,4 +57,3 @@ class QRScanner:
         cv2.destroyAllWindows()
 
         return None
-        

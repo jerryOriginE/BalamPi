@@ -9,7 +9,8 @@ class WasteAI:
         model_path,
         camera_index=0,
         confidence_threshold=0.90,
-        stable_frames=10
+        stable_frames=10,
+        lcd=None
     ):
 
         self.model = YOLO(model_path)
@@ -21,6 +22,8 @@ class WasteAI:
 
         self.last_label = None
         self.counter = 0
+
+        self.lcd = lcd
 
     def detect(self):
         """
@@ -56,7 +59,7 @@ class WasteAI:
             result.probs.top1conf
         )
 
-        print(result.probs.top1, label, confidence)
+        print(confidence, label)
 
         if confidence < self.confidence_threshold:
             self._reset()
@@ -68,6 +71,7 @@ class WasteAI:
 
         if label == self.last_label:
             self.counter += 1
+            self.lcd.show(f"Detected {label} ({confidence:.2f}), +{self.counter}")
         else:
             self.last_label = label
             self.counter = 1
